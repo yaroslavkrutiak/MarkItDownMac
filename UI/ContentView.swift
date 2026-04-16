@@ -28,6 +28,7 @@ struct ContentView: View {
         }
         .frame(minWidth: 400, minHeight: 340)
         .padding(24)
+        .overlay(alignment: .bottomTrailing) { debugToggle }
         .animation(.default, value: stateTag)
     }
 
@@ -104,6 +105,30 @@ struct ContentView: View {
                 .foregroundStyle(.secondary)
                 .textSelection(.enabled)
         }
+    }
+
+    @ViewBuilder
+    private var debugToggle: some View {
+        HStack(spacing: 6) {
+            if bridge.debugEnabled, case .error = state,
+               let log = DebugLogger.shared.latestLog() {
+                Button("Open Log") {
+                    NSWorkspace.shared.open(log)
+                }
+                .font(.caption2)
+                .buttonStyle(.link)
+            }
+
+            Button {
+                bridge.debugEnabled.toggle()
+            } label: {
+                Image(systemName: bridge.debugEnabled ? "ladybug.fill" : "ladybug")
+                    .foregroundStyle(bridge.debugEnabled ? .orange : .secondary)
+            }
+            .buttonStyle(.plain)
+            .help(bridge.debugEnabled ? "Debug logging ON — logs in ~/Library/Logs/MarkItDownMac/" : "Enable debug logging")
+        }
+        .padding(8)
     }
 
     // MARK: - Actions

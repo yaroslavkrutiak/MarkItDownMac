@@ -9,8 +9,25 @@ final class MarkItDownCLIImplementation: ConverterImplementation {
 
     func convert(fileURL: URL) throws -> String {
         let path = try resolvedBinaryPath()
-        let result = try shell.runShell("\(shellEscape(path)) \(shellEscape(fileURL.path))")
+        let command = "\(shellEscape(path)) \(shellEscape(fileURL.path))"
+        let result: ShellResult
+        do {
+            result = try shell.runShell(command)
+        } catch {
+            DebugLogger.shared.logFailure(
+                sourceFile: fileURL, command: command,
+                exitCode: -1, stdout: "", stderr: "",
+                error: error.localizedDescription
+            )
+            throw error
+        }
         if result.exitCode != 0 {
+            DebugLogger.shared.logFailure(
+                sourceFile: fileURL, command: command,
+                exitCode: result.exitCode,
+                stdout: result.output, stderr: result.error,
+                error: "Non-zero exit code"
+            )
             throw ShellError.executionFailed(stderr: result.error, exitCode: result.exitCode)
         }
         return result.output

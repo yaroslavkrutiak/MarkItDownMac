@@ -41,11 +41,15 @@ final class ConverterBridge: ObservableObject {
 
     @Published private(set) var supportedExtensions: [String] = []
     @Published private(set) var isToolInstalled: Bool = false
+    @Published var debugEnabled: Bool {
+        didSet { DebugLogger.shared.isEnabled = debugEnabled }
+    }
 
     private let implementation: ConverterImplementation
 
     init(implementation: ConverterImplementation) {
         self.implementation = implementation
+        self.debugEnabled = DebugLogger.shared.isEnabled
     }
 
     // MARK: - Bootstrap
