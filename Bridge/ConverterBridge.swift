@@ -44,6 +44,12 @@ final class ConverterBridge: ObservableObject {
         didSet { DebugLogger.shared.isEnabled = debugEnabled }
     }
 
+    /// Live log lines from the current streaming conversion.
+    @Published var conversionLog: [String] = []
+
+    /// Output resolution info from the most recent conversion.
+    @Published private(set) var lastOutputResult: FileOutputManager.OutputResult? = nil
+
     private let implementation: ConverterImplementation
 
     init(implementation: ConverterImplementation) {
@@ -64,6 +70,52 @@ final class ConverterBridge: ObservableObject {
     }
 
     // MARK: - Public API
+
+    /// Convert the file with live log streaming and write the `.md` output.
+    ///
+    /// Populates ``conversionLog`` with lines as they arrive and stores
+    /// collision info in ``lastOutputResult``.
+    func validateAndConvertStreaming(fileURL: URL, outputDir: URL? = nil) async throws -> URL {
+        guard isToolInstalled else { throw ConversionError.toolNotInstalled }
+
+        conversionLog = []
+        lastOutputResult = nil
+
+        let ext = fileURL.pathExtension.lowercased()
+        conversionLog.append("→ Validating format: \(ext)")
+
+        let impl = implementation
+        let sourceURL = fileURL
+
+        conversionLog.append("→ Starting conversion")
+
+        var fullOutput = ""
+        let stream = impl.convertStreaming(fileURL: sourceURL)
+        do {
+            for try await line in stream {
+                conversionLog.append(line)
+                if !line.hasPrefix("[stderr] ") && !line.hasPrefix("[error] ") {
+                    if !fullOutput.isEmpty { fullOutput += "\n" }
+                    fullOutput += line
+                }
+            }
+        } catch {
+            throw ConversionError.conversionFailed(error.localizedDescription)
+        }
+
+        conversionLog.append("→ Conversion complete")
+
+        let result = FileOutputManager.resolveOutput(for: fileURL, in: outputDir)
+        lastOutputResult = result
+
+        do {
+            try fullOutput.write(to: result.url, atomically: true, encoding: .utf8)
+        } catch {
+            throw ConversionError.outputWriteFailed(error.localizedDescription)
+        }
+
+        return result.url
+    }
 
     /// Convert the file and write the `.md` output. No format gate —
     /// markitdown itself decides what it can and cannot handle.

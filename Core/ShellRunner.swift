@@ -88,6 +88,76 @@ final class ShellRunner: Sendable {
         try run(executablePath: "/bin/zsh", arguments: ["-l", "-c", command], timeout: timeout)
     }
 
+    /// Run a shell command and stream stdout/stderr lines as they arrive.
+    func runShellStreaming(
+        _ command: String,
+        timeout: TimeInterval? = nil
+    ) -> (lines: AsyncStream<String>, exitCode: AsyncStream<Int32>) {
+        let effectiveTimeout = timeout ?? defaultTimeout
+
+        let (lineStream, lineCont) = AsyncStream<String>.makeStream()
+        let (exitStream, exitCont) = AsyncStream<Int32>.makeStream()
+
+        let process = Process()
+        let stdoutPipe = Pipe()
+        let stderrPipe = Pipe()
+
+        process.executableURL = URL(fileURLWithPath: "/bin/zsh")
+        process.arguments = ["-l", "-c", command]
+        process.standardOutput = stdoutPipe
+        process.standardError = stderrPipe
+        process.environment = Self.enrichedEnvironment()
+
+        let buffer = LineBuffer(continuation: lineCont)
+
+        stdoutPipe.fileHandleForReading.readabilityHandler = { handle in
+            let data = handle.availableData
+            if !data.isEmpty { buffer.append(data, prefix: nil) }
+        }
+        stderrPipe.fileHandleForReading.readabilityHandler = { handle in
+            let data = handle.availableData
+            if !data.isEmpty { buffer.append(data, prefix: "[stderr] ") }
+        }
+
+        do {
+            try process.run()
+        } catch {
+            lineCont.yield("[error] Failed to start process: \(error.localizedDescription)")
+            lineCont.finish()
+            exitCont.yield(-1)
+            exitCont.finish()
+            return (lineStream, exitStream)
+        }
+
+        DispatchQueue.global(qos: .utility).async {
+            let group = DispatchGroup()
+            group.enter()
+            DispatchQueue.global(qos: .utility).async {
+                process.waitUntilExit()
+                group.leave()
+            }
+            let timedOut = group.wait(timeout: .now() + effectiveTimeout) == .timedOut
+
+            stdoutPipe.fileHandleForReading.readabilityHandler = nil
+            stderrPipe.fileHandleForReading.readabilityHandler = nil
+            buffer.append(stdoutPipe.fileHandleForReading.readDataToEndOfFile(), prefix: nil)
+            buffer.append(stderrPipe.fileHandleForReading.readDataToEndOfFile(), prefix: "[stderr] ")
+            buffer.flush()
+
+            if timedOut {
+                process.terminate()
+                lineCont.yield("[error] Command timed out")
+                exitCont.yield(-1)
+            } else {
+                exitCont.yield(process.terminationStatus)
+            }
+            lineCont.finish()
+            exitCont.finish()
+        }
+
+        return (lineStream, exitStream)
+    }
+
     // MARK: - Helpers
 
     private func waitForExit(process: Process, timeout: TimeInterval) -> Bool {
@@ -113,6 +183,52 @@ final class ShellRunner: Sendable {
         env["PATH"] = (extra + [current]).joined(separator: ":")
         return env
     }
+}
+
+// Thread-safe line splitter that yields complete lines to an AsyncStream.
+private final class LineBuffer: @unchecked Sendable {
+    private var partial = Data()
+    private let lock = NSLock()
+    private let continuation: AsyncStream<String>.Continuation
+
+    init(continuation: AsyncStream<String>.Continuation) {
+        self.continuation = continuation
+    }
+
+    func append(_ data: Data, prefix: String?) {
+        guard !data.isEmpty else { return }
+        lock.lock()
+        partial.append(data)
+        // Split on newlines and yield complete lines.
+        while let range = partial.range(of: Data([0x0A])) {
+            let lineData = partial.subdata(in: partial.startIndex..<range.lowerBound)
+            partial.removeSubrange(partial.startIndex..<range.upperBound)
+            if let line = String(data: lineData, encoding: .utf8)?
+                .trimmingCharacters(in: .carriageReturns) {
+                let yielded = (prefix ?? "") + line
+                lock.unlock()
+                continuation.yield(yielded)
+                lock.lock()
+            }
+        }
+        lock.unlock()
+    }
+
+    func flush() {
+        lock.lock()
+        let remaining = partial
+        partial = Data()
+        lock.unlock()
+        if let line = String(data: remaining, encoding: .utf8)?
+            .trimmingCharacters(in: .whitespacesAndNewlines),
+           !line.isEmpty {
+            continuation.yield(line)
+        }
+    }
+}
+
+private extension CharacterSet {
+    static let carriageReturns = CharacterSet(charactersIn: "\r")
 }
 
 // Thread-safe accumulator for pipe data.

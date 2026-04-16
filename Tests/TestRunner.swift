@@ -1,4 +1,5 @@
 import Foundation
+@testable import MarkItDownCore
 
 // ---------------------------------------------------------------------------
 // Minimal test harness
@@ -78,6 +79,7 @@ enum TestMain {
 
         nonisolated(unsafe) var bridgeDone = false
         Task { @MainActor in
+            shellRunnerStreamingTests()
             converterBridgeTests()
             bridgeDone = true
         }
@@ -139,6 +141,23 @@ func fileOutputManagerTests() {
         try assertEqual(output.deletingLastPathComponent().path, outDir.path)
         try assertEqual(output.lastPathComponent, "slides.md")
     }
+
+    test("resolveOutput — no collision") {
+        let dir = makeTempDir("FOM"); defer { removeTempDir(dir) }
+        let result = FileOutputManager.resolveOutput(for: dir.appendingPathComponent("report.pdf"), in: dir)
+        try assertEqual(result.url.lastPathComponent, "report.md")
+        try check(!result.didCollide, "Should not have collided")
+        try assertEqual(result.originalName, "report.md")
+    }
+
+    test("resolveOutput — with collision") {
+        let dir = makeTempDir("FOM"); defer { removeTempDir(dir) }
+        try "".write(to: dir.appendingPathComponent("report.md"), atomically: true, encoding: .utf8)
+        let result = FileOutputManager.resolveOutput(for: dir.appendingPathComponent("report.pdf"), in: dir)
+        try assertEqual(result.url.lastPathComponent, "report-1.md")
+        try check(result.didCollide, "Should have collided")
+        try assertEqual(result.originalName, "report.md")
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -175,6 +194,21 @@ func shellRunnerTests() {
     test("PATH includes homebrew") {
         let r = try ShellRunner.shared.runShell("echo $PATH")
         try check(r.output.contains("/opt/homebrew/bin"), "PATH missing /opt/homebrew/bin")
+    }
+}
+
+func shellRunnerStreamingTests() {
+    print("\n--- ShellRunner (streaming) ---")
+
+    bridgeTest("streaming echo") {
+        let (lines, exits) = ShellRunner.shared.runShellStreaming("echo line1; echo line2")
+        var collected: [String] = []
+        for await line in lines { collected.append(line) }
+        try check(collected.contains("line1"), "Should contain line1, got: \(collected)")
+        try check(collected.contains("line2"), "Should contain line2, got: \(collected)")
+        var code: Int32 = -1
+        for await c in exits { code = c }
+        try assertEqual(code, 0)
     }
 }
 
@@ -314,5 +348,42 @@ func converterBridgeTests() {
 
         let output = try await bridge.validateAndConvert(fileURL: source, outputDir: dir)
         try assertEqual(output.pathExtension, "md")
+    }
+
+    bridgeTest("streaming conversion with log") {
+        let mock = MockConverterImplementation()
+        mock.streamingLines = ["line 1", "line 2", "# Result"]
+        let bridge = ConverterBridge(implementation: mock)
+        await bridge.loadFormats()
+
+        let dir = makeTempDir("Bridge"); defer { removeTempDir(dir) }
+        let source = dir.appendingPathComponent("report.pdf")
+        try "pdf".write(to: source, atomically: true, encoding: .utf8)
+
+        let output = try await bridge.validateAndConvertStreaming(fileURL: source, outputDir: dir)
+        try assertEqual(output.pathExtension, "md")
+
+        // conversionLog should contain synthetic + streamed lines
+        try check(bridge.conversionLog.contains("line 1"), "Log should contain streamed lines")
+        try check(bridge.conversionLog.contains("# Result"), "Log should contain result")
+        try check(bridge.lastOutputResult != nil, "lastOutputResult should be set")
+        try check(!bridge.lastOutputResult!.didCollide, "Should not have collided")
+    }
+
+    bridgeTest("streaming collision tracking") {
+        let mock = MockConverterImplementation()
+        mock.streamingLines = ["# Doc"]
+        let bridge = ConverterBridge(implementation: mock)
+        await bridge.loadFormats()
+
+        let dir = makeTempDir("Bridge"); defer { removeTempDir(dir) }
+        let source = dir.appendingPathComponent("doc.pdf")
+        try "pdf".write(to: source, atomically: true, encoding: .utf8)
+        try "existing".write(to: dir.appendingPathComponent("doc.md"), atomically: true, encoding: .utf8)
+
+        let output = try await bridge.validateAndConvertStreaming(fileURL: source, outputDir: dir)
+        try assertEqual(output.lastPathComponent, "doc-1.md")
+        try check(bridge.lastOutputResult!.didCollide, "Should have collided")
+        try assertEqual(bridge.lastOutputResult!.originalName, "doc.md")
     }
 }

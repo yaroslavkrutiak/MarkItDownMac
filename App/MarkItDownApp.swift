@@ -15,6 +15,6 @@ struct MarkItDownApp: App {
                 .environmentObject(bridge)
                 .task { await bridge.loadFormats() }
         }
-        .defaultSize(width: 460, height: 400)
+        .defaultSize(width: 420, height: 520)
     }
 }

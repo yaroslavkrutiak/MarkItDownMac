@@ -33,6 +33,38 @@ final class MarkItDownCLIImplementation: ConverterImplementation {
         return result.output
     }
 
+    func convertStreaming(fileURL: URL) -> AsyncThrowingStream<String, Error> {
+        AsyncThrowingStream { continuation in
+            guard let path = try? resolvedBinaryPath() else {
+                continuation.finish(throwing: ShellError.commandNotFound("markitdown"))
+                return
+            }
+            let command = "\(shellEscape(path)) \(shellEscape(fileURL.path))"
+            let (lines, exits) = shell.runShellStreaming(command)
+
+            Task {
+                var fullOutput = ""
+                for await line in lines {
+                    continuation.yield(line)
+                    // Accumulate non-meta lines as the markdown output.
+                    if !line.hasPrefix("[stderr] ") && !line.hasPrefix("[error] ") {
+                        if !fullOutput.isEmpty { fullOutput += "\n" }
+                        fullOutput += line
+                    }
+                }
+                var exitCode: Int32 = 0
+                for await code in exits { exitCode = code }
+
+                if exitCode != 0 {
+                    continuation.finish(throwing: ShellError.executionFailed(
+                        stderr: "Non-zero exit code", exitCode: exitCode))
+                } else {
+                    continuation.finish()
+                }
+            }
+        }
+    }
+
     func isInstalled() -> Bool {
         (try? resolvedBinaryPath()) != nil
     }

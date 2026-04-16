@@ -67,4 +67,28 @@ struct FileOutputManagerTests {
         #expect(output.deletingLastPathComponent().path == outDir.path)
         #expect(output.lastPathComponent == "slides.md")
     }
+
+    @Test func resolveOutputNoCollision() throws {
+        let dir = try makeTempDir()
+        defer { try? FileManager.default.removeItem(at: dir) }
+
+        let source = dir.appendingPathComponent("report.pdf")
+        let result = FileOutputManager.resolveOutput(for: source, in: dir)
+        #expect(result.url.lastPathComponent == "report.md")
+        #expect(result.didCollide == false)
+        #expect(result.originalName == "report.md")
+    }
+
+    @Test func resolveOutputWithCollision() throws {
+        let dir = try makeTempDir()
+        defer { try? FileManager.default.removeItem(at: dir) }
+
+        try "".write(to: dir.appendingPathComponent("report.md"), atomically: true, encoding: .utf8)
+
+        let source = dir.appendingPathComponent("report.pdf")
+        let result = FileOutputManager.resolveOutput(for: source, in: dir)
+        #expect(result.url.lastPathComponent == "report-1.md")
+        #expect(result.didCollide == true)
+        #expect(result.originalName == "report.md")
+    }
 }
