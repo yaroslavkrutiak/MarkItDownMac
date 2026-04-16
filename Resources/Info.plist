@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleName</key>
+    <string>MarkItDownMac</string>
+    <key>CFBundleDisplayName</key>
+    <string>MarkItDown</string>
+    <key>CFBundleIdentifier</key>
+    <string>com.markitdownmac.app</string>
+    <key>CFBundleVersion</key>
+    <string>1</string>
+    <key>CFBundleShortVersionString</key>
+    <string>1.0</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleExecutable</key>
+    <string>MarkItDownMac</string>
+    <key>LSMinimumSystemVersion</key>
+    <string>13.0</string>
+    <key>NSPrincipalClass</key>
+    <string>NSApplication</string>
+
+    <!-- Finder Quick Action / macOS Service -->
+    <key>NSServices</key>
+    <array>
+        <dict>
+            <key>NSMenuItem</key>
+            <dict>
+                <key>default</key>
+                <string>Convert to Markdown</string>
+            </dict>
+            <key>NSMessage</key>
+            <string>convertToMarkdown</string>
+            <key>NSPortName</key>
+            <string>MarkItDownMac</string>
+            <key>NSSendTypes</key>
+            <array>
+                <string>NSFilenamesPboardType</string>
+            </array>
+        </dict>
+    </array>
+</dict>
+</plist>

@@ -1,0 +1,297 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A10000001 /* MarkItDownApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000001; };
+		A10000002 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000002; };
+		A10000003 /* ConverterImplementation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000003; };
+		A10000004 /* MarkItDownCLIImplementation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000004; };
+		A10000005 /* ConverterBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000005; };
+		A10000006 /* SupportedFormats.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000006; };
+		A10000007 /* FileOutputManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000007; };
+		A10000008 /* ShellRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000008; };
+		A10000009 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000009; };
+		A10000010 /* DropZoneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010; };
+		A10000011 /* ConversionResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000011; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		A20000001 /* MarkItDownApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkItDownApp.swift; sourceTree = "<group>"; };
+		A20000002 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		A20000003 /* ConverterImplementation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConverterImplementation.swift; sourceTree = "<group>"; };
+		A20000004 /* MarkItDownCLIImplementation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkItDownCLIImplementation.swift; sourceTree = "<group>"; };
+		A20000005 /* ConverterBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConverterBridge.swift; sourceTree = "<group>"; };
+		A20000006 /* SupportedFormats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupportedFormats.swift; sourceTree = "<group>"; };
+		A20000007 /* FileOutputManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileOutputManager.swift; sourceTree = "<group>"; };
+		A20000008 /* ShellRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShellRunner.swift; sourceTree = "<group>"; };
+		A20000009 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		A20000010 /* DropZoneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DropZoneView.swift; sourceTree = "<group>"; };
+		A20000011 /* ConversionResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversionResultView.swift; sourceTree = "<group>"; };
+		A20000012 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A20000013 /* MarkItDownMac.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MarkItDownMac.entitlements; sourceTree = "<group>"; };
+		A30000001 /* MarkItDownMac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MarkItDownMac.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A40000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A50000001 /* Root */ = {
+			isa = PBXGroup;
+			children = (
+				A50000002 /* App */,
+				A50000003 /* Bridge */,
+				A50000004 /* Core */,
+				A50000005 /* UI */,
+				A50000006 /* Resources */,
+				A50000007 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A50000002 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				A20000001 /* MarkItDownApp.swift */,
+				A20000002 /* AppDelegate.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		A50000003 /* Bridge */ = {
+			isa = PBXGroup;
+			children = (
+				A20000003 /* ConverterImplementation.swift */,
+				A20000004 /* MarkItDownCLIImplementation.swift */,
+				A20000005 /* ConverterBridge.swift */,
+			);
+			path = Bridge;
+			sourceTree = "<group>";
+		};
+		A50000004 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				A20000006 /* SupportedFormats.swift */,
+				A20000007 /* FileOutputManager.swift */,
+				A20000008 /* ShellRunner.swift */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		A50000005 /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				A20000009 /* ContentView.swift */,
+				A20000010 /* DropZoneView.swift */,
+				A20000011 /* ConversionResultView.swift */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
+		A50000006 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				A20000012 /* Info.plist */,
+				A20000013 /* MarkItDownMac.entitlements */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		A50000007 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A30000001 /* MarkItDownMac.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A60000001 /* MarkItDownMac */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A80000003 /* Build configuration list for PBXNativeTarget */;
+			buildPhases = (
+				A70000001 /* Sources */,
+				A40000001 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MarkItDownMac;
+			productName = MarkItDownMac;
+			productReference = A30000001 /* MarkItDownMac.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A90000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1600;
+				LastUpgradeCheck = 1600;
+			};
+			buildConfigurationList = A80000001 /* Build configuration list for PBXProject */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A50000001;
+			productRefGroup = A50000007 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A60000001 /* MarkItDownMac */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A70000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000001 /* MarkItDownApp.swift in Sources */,
+				A10000002 /* AppDelegate.swift in Sources */,
+				A10000003 /* ConverterImplementation.swift in Sources */,
+				A10000004 /* MarkItDownCLIImplementation.swift in Sources */,
+				A10000005 /* ConverterBridge.swift in Sources */,
+				A10000006 /* SupportedFormats.swift in Sources */,
+				A10000007 /* FileOutputManager.swift in Sources */,
+				A10000008 /* ShellRunner.swift in Sources */,
+				A10000009 /* ContentView.swift in Sources */,
+				A10000010 /* DropZoneView.swift in Sources */,
+				A10000011 /* ConversionResultView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		A80000011 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		A80000012 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		A80000021 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Resources/MarkItDownMac.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.markitdownmac.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		A80000022 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Resources/MarkItDownMac.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.markitdownmac.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A80000001 /* Build configuration list for PBXProject */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A80000011 /* Debug */,
+				A80000012 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A80000003 /* Build configuration list for PBXNativeTarget */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A80000021 /* Debug */,
+				A80000022 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+	};
+	rootObject = A90000001 /* Project object */;
+}
