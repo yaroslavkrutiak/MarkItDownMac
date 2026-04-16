@@ -11,6 +11,12 @@ cask "markitdownmac" do
 
   app "MarkItDownMac.app"
 
+  postflight do
+    system_command "/usr/bin/xattr",
+                   args: ["-cr", "#{appdir}/MarkItDownMac.app"],
+                   sudo: false
+  end
+
   zap trash: [
     "~/Library/Logs/MarkItDownMac",
     "~/Library/Preferences/com.markitdownmac.app.plist",

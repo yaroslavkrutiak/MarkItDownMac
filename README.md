@@ -75,6 +75,8 @@ open MarkItDownMac.xcodeproj
 
 Select the **MarkItDownMac** scheme, then **Product → Run** (⌘R).
 
+> **Note:** The app is not notarized. If macOS shows a "damaged" or unidentified-developer warning after building, run `xattr -cr /path/to/MarkItDownMac.app` before launching.
+
 ## Setup: Finder Quick Action
 
 After launching the app at least once:
@@ -154,7 +156,7 @@ The UI layer never references `MarkItDownCLIImplementation` directly. To add a d
 | Quick Action doesn't appear in Finder | Run the app once, then enable in System Settings → Keyboard → Keyboard Shortcuts → Services |
 | Conversion times out | Large files may exceed the 60s default. This is configurable in `ShellRunner.defaultTimeout` |
 | markitdown installed but app can't find it | The app searches `~/.pyenv/shims`, `~/.local/bin`, `/opt/homebrew/bin`, `/usr/local/bin`, then `which`. Make sure markitdown is in one of these |
-| "Damaged" or quarantine warning | Install via Homebrew or the install script instead of manual download. Or run `xattr -cr MarkItDownMac.app` |
+| "Damaged" or quarantine warning | The app is not notarized. Run `xattr -cr MarkItDownMac.app` to clear the quarantine flag. Homebrew and the install script do this automatically. |
 
 ## License
 
