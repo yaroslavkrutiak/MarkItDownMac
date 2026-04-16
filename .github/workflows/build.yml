@@ -5,11 +5,11 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
-  workflow_dispatch:        # lets you trigger manually from the Actions tab
+  workflow_dispatch:
 
 jobs:
   build:
-    runs-on: macos-15      # comes with Xcode 16 pre-installed
+    runs-on: macos-15
 
     steps:
       - uses: actions/checkout@v4
@@ -28,13 +28,14 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO
 
-      - name: Package .app
+      - name: Stage .app for upload
         run: |
           APP_PATH=$(find build -name "MarkItDownMac.app" -type d | head -1)
-          ditto -c -k --keepParent "$APP_PATH" MarkItDownMac.zip
+          mkdir -p artifact
+          cp -R "$APP_PATH" artifact/MarkItDownMac.app
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: MarkItDownMac
-          path: MarkItDownMac.zip
+          path: artifact/MarkItDownMac.app
