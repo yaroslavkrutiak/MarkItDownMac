@@ -89,33 +89,78 @@ final class MarkItDownCLIImplementation: ConverterImplementation {
             from markitdown import MarkItDown
             m = MarkItDown()
             exts = set()
-            # v0.1.x: _extension_to_converter dict
+
+            # Strategy A: _extension_to_converter dict (v0.1.x)
             if hasattr(m, '_extension_to_converter'):
                 exts.update(m._extension_to_converter.keys())
-            # v0.0.x: list of converter objects with file_extensions attr
+
+            # Strategy B: walk converter objects and probe every
+            # attribute name that has been used across versions
             if hasattr(m, '_converters'):
-                items = m._converters if isinstance(m._converters, list) else m._converters.values()
+                items = m._converters
+                if isinstance(items, dict):
+                    items = items.values()
                 for c in items:
-                    for attr in ('file_extensions', 'extensions', 'supported_extensions'):
-                        if hasattr(c, attr):
-                            val = getattr(c, attr)
-                            if isinstance(val, (list, tuple, set, frozenset)):
-                                exts.update(val)
+                    for attr in (
+                        'accepted_file_extensions',
+                        'file_extensions',
+                        'extensions',
+                        'supported_extensions',
+                    ):
+                        if not hasattr(c, attr):
+                            continue
+                        val = getattr(c, attr)
+                        if callable(val):
+                            try:
+                                val = val()
+                            except Exception:
+                                continue
+                        if isinstance(val, (list, tuple, set, frozenset)):
+                            exts.update(val)
+                        elif isinstance(val, str) and val:
+                            exts.add(val)
+
+            # Strategy C: module-level constant
+            try:
+                from markitdown._markitdown import SUPPORTED_EXTENSIONS
+                if isinstance(SUPPORTED_EXTENSIONS, (list, tuple, set, frozenset)):
+                    exts.update(SUPPORTED_EXTENSIONS)
+                elif isinstance(SUPPORTED_EXTENSIONS, dict):
+                    exts.update(SUPPORTED_EXTENSIONS.keys())
+            except Exception:
+                pass
+
             exts = sorted({e.lstrip('.').lower() for e in exts if e})
             if exts:
                 print('\\n'.join(exts))
             else:
                 sys.exit(1)
-        except Exception:
+        except Exception as exc:
+            print(str(exc), file=sys.stderr)
             sys.exit(1)
         """
 
-        guard let result = try? shell.runShell(
-            "python3 -c \(shellEscape(script))", timeout: 10
-        ), result.exitCode == 0 else {
-            return nil
+        let result: ShellResult?
+        do {
+            result = try shell.runShell("python3 -c \(shellEscape(script))", timeout: 10)
+        } catch {
+            result = nil
         }
-        return parseExtensions(from: result.output)
+
+        if let r = result, r.exitCode == 0 {
+            return parseExtensions(from: r.output)
+        }
+
+        // Log the failure so the user can diagnose with debug mode.
+        DebugLogger.shared.logFailure(
+            sourceFile: URL(fileURLWithPath: "/"),
+            command: "python3 format introspection",
+            exitCode: result?.exitCode ?? -1,
+            stdout: result?.output ?? "",
+            stderr: result?.error ?? "",
+            error: "Format discovery via Python introspection failed"
+        )
+        return nil
     }
 
     /// Fallback: parse `markitdown --help` for file extension references.

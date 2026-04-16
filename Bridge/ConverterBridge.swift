@@ -66,7 +66,11 @@ final class ConverterBridge: ObservableObject {
 
     // MARK: - Public API
 
+    /// Returns `true` if the extension is in the discovered list, or if
+    /// discovery returned nothing (in which case we allow everything through
+    /// and let markitdown itself reject unsupported files).
     func isSupportedFormat(_ url: URL) -> Bool {
+        if supportedExtensions.isEmpty { return true }
         let ext = url.pathExtension.lowercased()
         return supportedExtensions.contains(ext)
     }
