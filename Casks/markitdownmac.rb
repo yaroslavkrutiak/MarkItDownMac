@@ -1,6 +1,6 @@
 cask "markitdownmac" do
-  version "1.0.1"
-  sha256 "751f6184a4ff28aee0afbb5bf7ba0684143cdcc31e3c151b5987dc9c7102394d"
+  version "1.2.1"
+  sha256 "01ff4daf59ba928d71d0e685db949e61c934c020c1848bec3b614d4b1a748036"
 
   url "https://github.com/yaroslavkrutiak/MarkItDownMac/releases/download/v#{version}/MarkItDownMac.zip"
   name "MarkItDownMac"
