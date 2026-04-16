@@ -37,7 +37,7 @@ pip install markitdown
 No quarantine warnings, automatic updates.
 
 ```sh
-brew tap yaroslavkrutiak/markitdownmac
+brew tap yaroslavkrutiak/markitdownmac https://github.com/yaroslavkrutiak/MarkItDownMac.git
 brew install --cask markitdownmac
 ```
 

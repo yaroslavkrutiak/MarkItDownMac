@@ -51,7 +51,7 @@ jobs:
 
             **Homebrew (recommended):**
             ```
-            brew tap yaroslavkrutiak/markitdownmac
+            brew tap yaroslavkrutiak/markitdownmac https://github.com/yaroslavkrutiak/MarkItDownMac.git
             brew install --cask markitdownmac
             ```
 
@@ -68,23 +68,11 @@ jobs:
 
             SHA256: `${{ steps.sha.outputs.sha256 }}`
 
-      - name: Update Homebrew tap
-        if: ${{ vars.TAP_REPO != '' || true }}
+      - name: Update Homebrew cask
         env:
-          GH_TOKEN: ${{ secrets.TAP_TOKEN }}
           VERSION: ${{ github.event.inputs.version }}
           SHA256: ${{ steps.sha.outputs.sha256 }}
         run: |
-          # Skip if no TAP_TOKEN secret is configured
-          if [ -z "${GH_TOKEN:-}" ]; then
-            echo "::notice::TAP_TOKEN secret not set — skipping Homebrew tap update."
-            echo "Manually update the cask version to ${VERSION#v} and sha256 to $SHA256"
-            exit 0
-          fi
-
-          git clone https://x-access-token:${GH_TOKEN}@github.com/yaroslavkrutiak/homebrew-markitdownmac.git tap
-          cd tap
-
           CLEAN_VERSION="${VERSION#v}"
           sed -i '' "s/version \".*\"/version \"${CLEAN_VERSION}\"/" Casks/markitdownmac.rb
           sed -i '' "s/sha256 .*/sha256 \"${SHA256}\"/" Casks/markitdownmac.rb
@@ -92,5 +80,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add Casks/markitdownmac.rb
-          git commit -m "Update to ${VERSION}" || echo "No changes"
+          git commit -m "Update cask to ${VERSION}"
           git push
