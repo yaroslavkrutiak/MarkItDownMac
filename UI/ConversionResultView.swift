@@ -39,17 +39,17 @@ struct ConversionResultView: View {
                     Text("Convert Another")
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundStyle(Color.accentColor)
+                        .accentGlassButton()
                 }
                 .buttonStyle(.plain)
-                .accentGlassButton()
 
                 Button { copyPath() } label: {
                     Text(copiedPath ? "Copied!" : "Copy Path")
                         .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(.primary.opacity(0.6))
+                        .glassButton()
                 }
                 .buttonStyle(.plain)
-                .glassButton()
             }
         }
     }

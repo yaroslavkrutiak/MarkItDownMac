@@ -60,13 +60,17 @@ final class ConverterBridge: ObservableObject {
     // MARK: - Bootstrap
 
     /// Call once on app launch to cache the installed format list.
+    /// Falls back to the known markitdown format list when dynamic
+    /// detection returns fewer than 5 results.
     func loadFormats() async {
         let impl = implementation
         let (installed, formats) = await Task.detached {
             (impl.isInstalled(), impl.installedSupportedFormats())
         }.value
         isToolInstalled = installed
-        supportedExtensions = formats
+        supportedExtensions = formats.count >= 5
+            ? formats
+            : FormatCategory.knownMarkitdownFormats
     }
 
     // MARK: - Public API

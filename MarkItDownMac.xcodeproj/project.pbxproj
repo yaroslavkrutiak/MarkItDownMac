@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A10000020 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A20000020; };
 		A10000001 /* MarkItDownApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000001; };
 		A10000002 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000002; };
 		A10000003 /* ConverterImplementation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000003; };
@@ -41,6 +42,7 @@
 		A20000011 /* ConversionResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversionResultView.swift; sourceTree = "<group>"; };
 		A20000012 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A20000013 /* MarkItDownMac.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MarkItDownMac.entitlements; sourceTree = "<group>"; };
+		A20000020 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A20000015 /* GlassStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassStyle.swift; sourceTree = "<group>"; };
 		A20000016 /* FormatChipView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormatChipView.swift; sourceTree = "<group>"; };
 		A20000017 /* SupportedFormatsPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupportedFormatsPanel.swift; sourceTree = "<group>"; };
@@ -58,6 +60,17 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A40000002 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000020 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXGroup section */
 		A50000001 /* Root */ = {
@@ -122,6 +135,7 @@
 			children = (
 				A20000012 /* Info.plist */,
 				A20000013 /* MarkItDownMac.entitlements */,
+				A20000020 /* Assets.xcassets */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -143,6 +157,7 @@
 			buildPhases = (
 				A70000001 /* Sources */,
 				A40000001 /* Frameworks */,
+				A40000002 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -256,6 +271,7 @@
 		A80000021 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Resources/MarkItDownMac.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -276,6 +292,7 @@
 		A80000022 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Resources/MarkItDownMac.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;

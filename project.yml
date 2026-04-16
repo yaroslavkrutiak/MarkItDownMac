@@ -19,10 +19,12 @@ targets:
       - path: Bridge
       - path: Core
       - path: UI
+      - path: Resources/Assets.xcassets
     settings:
       base:
         INFOPLIST_FILE: Resources/Info.plist
         CODE_SIGN_ENTITLEMENTS: Resources/MarkItDownMac.entitlements
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         PRODUCT_BUNDLE_IDENTIFIER: com.markitdownmac.app
         CODE_SIGN_STYLE: Automatic
         PRODUCT_NAME: MarkItDownMac

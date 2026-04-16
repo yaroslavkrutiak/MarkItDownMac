@@ -50,4 +50,27 @@ enum FormatCategory: String, CaseIterable {
     static func summary(_ extensions: [String]) -> String {
         grouped(extensions).map(\.category.rawValue).joined(separator: ", ")
     }
+
+    /// Comprehensive list of all formats supported by the official markitdown tool.
+    /// Used as a fallback when dynamic detection returns too few results.
+    static let knownMarkitdownFormats: [String] = [
+        // Documents
+        "pdf", "docx", "doc", "rtf", "txt", "odt", "epub",
+        // Presentations
+        "pptx", "ppt", "odp",
+        // Spreadsheets
+        "xlsx", "xls", "csv", "ods",
+        // Images
+        "jpg", "jpeg", "png", "gif", "bmp", "tiff", "tif", "webp", "svg",
+        // Audio
+        "mp3", "wav", "m4a", "ogg", "flac", "aac",
+        // Web
+        "html", "htm", "xml", "mhtml", "rss",
+        // Data
+        "json", "yaml", "yml", "toml",
+        // Archives
+        "zip",
+        // Notebooks / Code
+        "ipynb",
+    ]
 }

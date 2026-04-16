@@ -65,9 +65,9 @@ struct ContentView: View {
                         .font(.system(size: 13, weight: .medium))
                 }
                 .foregroundStyle(.primary.opacity(0.85))
+                .glassButton()
             }
             .buttonStyle(.plain)
-            .glassButton()
             .keyboardShortcut("o", modifiers: .command)
 
             if !bridge.isToolInstalled {
@@ -184,9 +184,9 @@ struct ContentView: View {
                     Text("Retry Detection")
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundStyle(Color.accentColor)
+                        .accentGlassButton()
                 }
                 .buttonStyle(.plain)
-                .accentGlassButton()
 
                 Button {
                     NSWorkspace.shared.open(
@@ -196,9 +196,9 @@ struct ContentView: View {
                     Text("Open Terminal")
                         .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(.primary.opacity(0.6))
+                        .glassButton()
                 }
                 .buttonStyle(.plain)
-                .glassButton()
             }
         }
     }
