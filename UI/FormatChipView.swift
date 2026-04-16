@@ -14,17 +14,17 @@ struct FormatChipView: View {
 
     var body: some View {
         Text(ext.uppercased())
-            .font(.system(size: 10, weight: .medium, design: .default))
+            .font(.system(size: 10, weight: .semibold, design: .default))
             .foregroundStyle(color)
             .padding(.horizontal, 8)
-            .padding(.vertical, 3)
+            .padding(.vertical, 4)
             .background(
                 RoundedRectangle(cornerRadius: GlassStyle.chipRadius)
-                    .fill(color.opacity(0.12))
+                    .fill(color.opacity(0.15))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: GlassStyle.chipRadius)
-                    .stroke(color.opacity(0.25), lineWidth: 0.5)
+                    .stroke(color.opacity(0.30), lineWidth: 0.75)
             )
     }
 }

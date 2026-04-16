@@ -17,14 +17,14 @@ struct DropZoneView: View {
                 .fill(
                     isTargeted
                         ? Color.accentColor.opacity(0.15)
-                        : Color.white.opacity(0.06)
+                        : Color.primary.opacity(0.06)
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 14)
                         .stroke(
                             isTargeted
                                 ? Color.accentColor.opacity(0.4)
-                                : Color.white.opacity(0.2),
+                                : Color.primary.opacity(0.18),
                             lineWidth: 1
                         )
                 )
@@ -79,13 +79,13 @@ struct DropZoneView: View {
                 .strokeBorder(
                     isTargeted
                         ? Color.accentColor.opacity(0.6)
-                        : Color.white.opacity(0.2),
+                        : Color.primary.opacity(0.18),
                     style: StrokeStyle(lineWidth: 1.5, dash: [8, 4])
                 )
         )
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(isTargeted ? Color.accentColor.opacity(0.06) : Color.white.opacity(0.03))
+                .fill(isTargeted ? Color.accentColor.opacity(0.06) : Color.primary.opacity(0.03))
         )
         .onDrop(of: [.fileURL], isTargeted: $isTargeted) { providers in
             handleDrop(providers)

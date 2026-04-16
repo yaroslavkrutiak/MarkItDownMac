@@ -46,13 +46,13 @@ struct ContentView: View {
             // "or" divider
             HStack(spacing: 10) {
                 Rectangle()
-                    .fill(Color.white.opacity(0.1))
+                    .fill(Color.primary.opacity(0.1))
                     .frame(height: 1)
                 Text("or")
                     .font(.system(size: 11, weight: .medium))
                     .foregroundStyle(.tertiary)
                 Rectangle()
-                    .fill(Color.white.opacity(0.1))
+                    .fill(Color.primary.opacity(0.1))
                     .frame(height: 1)
             }
 
@@ -232,24 +232,41 @@ struct ContentView: View {
         .glassPanel(cornerRadius: 10)
     }
 
-    // MARK: - Debug Toggle
+    // MARK: - Bottom Controls
+
+    @AppStorage(GlassStyle.glassEnabledKey) private var glassEnabled = true
 
     @ViewBuilder
     private var debugToggle: some View {
-        Button {
-            bridge.debugEnabled.toggle()
-        } label: {
-            Image(systemName: bridge.debugEnabled ? "ladybug.fill" : "ladybug")
-                .font(.system(size: 12))
-                .foregroundStyle(bridge.debugEnabled ? .orange : .secondary)
-                .padding(6)
+        HStack(spacing: 4) {
+            // Glass toggle
+            Button {
+                glassEnabled.toggle()
+            } label: {
+                Image(systemName: glassEnabled ? "sparkles" : "sparkles")
+                    .font(.system(size: 11))
+                    .foregroundStyle(glassEnabled ? .blue : .secondary)
+                    .padding(5)
+            }
+            .buttonStyle(.plain)
+            .help(glassEnabled ? "Glass effect ON" : "Glass effect OFF")
+
+            // Debug toggle
+            Button {
+                bridge.debugEnabled.toggle()
+            } label: {
+                Image(systemName: bridge.debugEnabled ? "ladybug.fill" : "ladybug")
+                    .font(.system(size: 11))
+                    .foregroundStyle(bridge.debugEnabled ? .orange : .secondary)
+                    .padding(5)
+            }
+            .buttonStyle(.plain)
+            .help(bridge.debugEnabled
+                  ? "Debug logging ON — logs in ~/Library/Logs/MarkItDownMac/"
+                  : "Enable debug logging")
         }
-        .buttonStyle(.plain)
         .glassPanel(cornerRadius: 8)
         .padding(8)
-        .help(bridge.debugEnabled
-              ? "Debug logging ON — logs in ~/Library/Logs/MarkItDownMac/"
-              : "Enable debug logging")
     }
 
     // MARK: - Actions
