@@ -1,39 +1,49 @@
 import SwiftUI
 
-/// Glass panel displaying color-coded format chips grouped by category.
+/// Compact glass panel showing key format chips with an overflow count.
 struct SupportedFormatsPanel: View {
     let extensions: [String]
 
+    private let maxVisible = 12
+
+    private var visible: [String] {
+        Array(extensions.prefix(maxVisible))
+    }
+
+    private var overflowCount: Int {
+        max(0, extensions.count - maxVisible)
+    }
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("SUPPORTED FORMATS")
-                .font(.system(size: 10, weight: .semibold))
-                .foregroundStyle(.secondary)
+        VStack(alignment: .leading, spacing: 6) {
+            Text("\(extensions.count) SUPPORTED FORMATS")
+                .font(.system(size: 9, weight: .semibold))
+                .foregroundStyle(.tertiary)
                 .tracking(0.8)
 
-            FlowLayout(spacing: 5) {
-                ForEach(extensions, id: \.self) { ext in
+            FlowLayout(spacing: 4) {
+                ForEach(visible, id: \.self) { ext in
                     FormatChipView(ext: ext)
                 }
 
-                if extensions.count > 14 {
-                    Text("+\(extensions.count - 14) more")
-                        .font(.system(size: 10, weight: .medium))
+                if overflowCount > 0 {
+                    Text("+\(overflowCount)")
+                        .font(.system(size: 9, weight: .semibold))
                         .foregroundStyle(.secondary)
-                        .padding(.horizontal, 8)
+                        .padding(.horizontal, 7)
                         .padding(.vertical, 3)
                         .background(
                             RoundedRectangle(cornerRadius: GlassStyle.chipRadius)
-                                .fill(Color.white.opacity(0.07))
+                                .fill(Color.primary.opacity(0.06))
                         )
                         .overlay(
                             RoundedRectangle(cornerRadius: GlassStyle.chipRadius)
-                                .stroke(Color.white.opacity(0.12), lineWidth: 0.5)
+                                .stroke(Color.primary.opacity(0.10), lineWidth: 0.5)
                         )
                 }
             }
         }
-        .padding(12)
+        .padding(10)
         .glassPanel()
     }
 }
