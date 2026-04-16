@@ -19,6 +19,11 @@
 		A10000010 /* DropZoneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010; };
 		A10000011 /* ConversionResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000011; };
 		A10000012 /* DebugLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000014; };
+		A10000013 /* GlassStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000015; };
+		A10000014 /* FormatChipView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000016; };
+		A10000015 /* SupportedFormatsPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000017; };
+		A10000016 /* ProgressRingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000018; };
+		A10000017 /* ConvertingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000019; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -36,6 +41,11 @@
 		A20000011 /* ConversionResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversionResultView.swift; sourceTree = "<group>"; };
 		A20000012 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A20000013 /* MarkItDownMac.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MarkItDownMac.entitlements; sourceTree = "<group>"; };
+		A20000015 /* GlassStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassStyle.swift; sourceTree = "<group>"; };
+		A20000016 /* FormatChipView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormatChipView.swift; sourceTree = "<group>"; };
+		A20000017 /* SupportedFormatsPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupportedFormatsPanel.swift; sourceTree = "<group>"; };
+		A20000018 /* ProgressRingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressRingView.swift; sourceTree = "<group>"; };
+		A20000019 /* ConvertingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConvertingView.swift; sourceTree = "<group>"; };
 		A30000001 /* MarkItDownMac.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MarkItDownMac.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -98,6 +108,11 @@
 				A20000009 /* ContentView.swift */,
 				A20000010 /* DropZoneView.swift */,
 				A20000011 /* ConversionResultView.swift */,
+				A20000015 /* GlassStyle.swift */,
+				A20000016 /* FormatChipView.swift */,
+				A20000017 /* SupportedFormatsPanel.swift */,
+				A20000018 /* ProgressRingView.swift */,
+				A20000019 /* ConvertingView.swift */,
 			);
 			path = UI;
 			sourceTree = "<group>";
@@ -183,6 +198,11 @@
 				A10000010 /* DropZoneView.swift in Sources */,
 				A10000011 /* ConversionResultView.swift in Sources */,
 			A10000012 /* DebugLogger.swift in Sources */,
+				A10000013 /* GlassStyle.swift in Sources */,
+				A10000014 /* FormatChipView.swift in Sources */,
+				A10000015 /* SupportedFormatsPanel.swift in Sources */,
+				A10000016 /* ProgressRingView.swift in Sources */,
+				A10000017 /* ConvertingView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
