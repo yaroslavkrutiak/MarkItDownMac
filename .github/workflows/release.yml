@@ -1,13 +1,14 @@
-name: Build macOS App
+name: Release
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version tag (e.g. v1.0.0)"
+        required: true
 
 jobs:
-  build:
+  release:
     runs-on: macos-15
 
     steps:
@@ -33,8 +34,18 @@ jobs:
           cd "$(dirname "$APP_PATH")"
           ditto -c -k --keepParent MarkItDownMac.app "$GITHUB_WORKSPACE/MarkItDownMac.zip"
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
         with:
-          name: MarkItDownMac
-          path: MarkItDownMac.zip
+          tag_name: ${{ github.event.inputs.version }}
+          name: MarkItDownMac ${{ github.event.inputs.version }}
+          files: MarkItDownMac.zip
+          body: |
+            ## Install
+
+            1. Download **MarkItDownMac.zip** below
+            2. Extract it
+            3. Run in Terminal: `xattr -cr MarkItDownMac.app`
+            4. Double-click **MarkItDownMac.app** to launch
+
+            > The `xattr` step is needed because the app is not code-signed. macOS quarantines unsigned downloaded apps.
