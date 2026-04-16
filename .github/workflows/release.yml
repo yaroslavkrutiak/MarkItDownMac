@@ -10,6 +10,8 @@ on:
 jobs:
   release:
     runs-on: macos-15
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@v4
@@ -34,6 +36,10 @@ jobs:
           cd "$(dirname "$APP_PATH")"
           ditto -c -k --keepParent MarkItDownMac.app "$GITHUB_WORKSPACE/MarkItDownMac.zip"
 
+      - name: Compute SHA256
+        id: sha
+        run: echo "sha256=$(shasum -a 256 MarkItDownMac.zip | awk '{print $1}')" >> "$GITHUB_OUTPUT"
+
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
@@ -43,9 +49,48 @@ jobs:
           body: |
             ## Install
 
+            **Homebrew (recommended):**
+            ```
+            brew tap yaroslavkrutiak/markitdownmac
+            brew install --cask markitdownmac
+            ```
+
+            **One-liner:**
+            ```
+            curl -fsSL https://raw.githubusercontent.com/yaroslavkrutiak/MarkItDownMac/main/scripts/install.sh | bash
+            ```
+
+            **Manual:**
             1. Download **MarkItDownMac.zip** below
             2. Extract it
-            3. Run in Terminal: `xattr -cr MarkItDownMac.app`
-            4. Double-click **MarkItDownMac.app** to launch
+            3. Run `xattr -cr MarkItDownMac.app`
+            4. Move to `/Applications`
 
-            > The `xattr` step is needed because the app is not code-signed. macOS quarantines unsigned downloaded apps.
+            SHA256: `${{ steps.sha.outputs.sha256 }}`
+
+      - name: Update Homebrew tap
+        if: ${{ vars.TAP_REPO != '' || true }}
+        env:
+          GH_TOKEN: ${{ secrets.TAP_TOKEN }}
+          VERSION: ${{ github.event.inputs.version }}
+          SHA256: ${{ steps.sha.outputs.sha256 }}
+        run: |
+          # Skip if no TAP_TOKEN secret is configured
+          if [ -z "${GH_TOKEN:-}" ]; then
+            echo "::notice::TAP_TOKEN secret not set — skipping Homebrew tap update."
+            echo "Manually update the cask version to ${VERSION#v} and sha256 to $SHA256"
+            exit 0
+          fi
+
+          git clone https://x-access-token:${GH_TOKEN}@github.com/yaroslavkrutiak/homebrew-markitdownmac.git tap
+          cd tap
+
+          CLEAN_VERSION="${VERSION#v}"
+          sed -i '' "s/version \".*\"/version \"${CLEAN_VERSION}\"/" Casks/markitdownmac.rb
+          sed -i '' "s/sha256 .*/sha256 \"${SHA256}\"/" Casks/markitdownmac.rb
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Casks/markitdownmac.rb
+          git commit -m "Update to ${VERSION}" || echo "No changes"
+          git push
