@@ -83,52 +83,56 @@ final class MarkItDownCLIImplementation: ConverterImplementation {
     /// extensions. Tries several internal APIs that have existed across
     /// different library versions.
     private func formatsViaPythonIntrospection() -> [String]? {
+        // Scan every converter for any attribute whose name contains "ext",
+        // regardless of the markitdown version's internal naming convention.
         let script = """
-        import sys
+        import sys, warnings
+        warnings.filterwarnings("ignore")
         try:
             from markitdown import MarkItDown
             m = MarkItDown()
             exts = set()
 
-            # Strategy A: _extension_to_converter dict (v0.1.x)
+            # Strategy A: _extension_to_converter dict
             if hasattr(m, '_extension_to_converter'):
                 exts.update(m._extension_to_converter.keys())
 
-            # Strategy B: walk converter objects and probe every
-            # attribute name that has been used across versions
+            # Strategy B: scan every converter attribute containing "ext"
             if hasattr(m, '_converters'):
                 items = m._converters
                 if isinstance(items, dict):
                     items = items.values()
                 for c in items:
-                    for attr in (
-                        'accepted_file_extensions',
-                        'file_extensions',
-                        'extensions',
-                        'supported_extensions',
-                    ):
-                        if not hasattr(c, attr):
+                    for attr_name in dir(c):
+                        if 'ext' not in attr_name.lower():
                             continue
-                        val = getattr(c, attr)
+                        if attr_name.startswith('__'):
+                            continue
+                        val = getattr(c, attr_name, None)
                         if callable(val):
                             try:
                                 val = val()
                             except Exception:
                                 continue
                         if isinstance(val, (list, tuple, set, frozenset)):
-                            exts.update(val)
+                            exts.update(str(e) for e in val)
                         elif isinstance(val, str) and val:
                             exts.add(val)
 
-            # Strategy C: module-level constant
-            try:
-                from markitdown._markitdown import SUPPORTED_EXTENSIONS
-                if isinstance(SUPPORTED_EXTENSIONS, (list, tuple, set, frozenset)):
-                    exts.update(SUPPORTED_EXTENSIONS)
-                elif isinstance(SUPPORTED_EXTENSIONS, dict):
-                    exts.update(SUPPORTED_EXTENSIONS.keys())
-            except Exception:
-                pass
+            # Strategy C: module-level constants
+            for mod_path in ('markitdown._markitdown', 'markitdown'):
+                try:
+                    mod = __import__(mod_path, fromlist=['_'])
+                    for name in dir(mod):
+                        if 'EXTENSION' not in name.upper():
+                            continue
+                        val = getattr(mod, name, None)
+                        if isinstance(val, (list, tuple, set, frozenset)):
+                            exts.update(str(e) for e in val)
+                        elif isinstance(val, dict):
+                            exts.update(str(e) for e in val.keys())
+                except Exception:
+                    pass
 
             exts = sorted({e.lstrip('.').lower() for e in exts if e})
             if exts:
@@ -142,7 +146,7 @@ final class MarkItDownCLIImplementation: ConverterImplementation {
 
         let result: ShellResult?
         do {
-            result = try shell.runShell("python3 -c \(shellEscape(script))", timeout: 10)
+            result = try shell.runShell("python3 -c \(shellEscape(script))", timeout: 15)
         } catch {
             result = nil
         }
@@ -151,7 +155,6 @@ final class MarkItDownCLIImplementation: ConverterImplementation {
             return parseExtensions(from: r.output)
         }
 
-        // Log the failure so the user can diagnose with debug mode.
         DebugLogger.shared.logFailure(
             sourceFile: URL(fileURLWithPath: "/"),
             command: "python3 format introspection",
@@ -171,7 +174,6 @@ final class MarkItDownCLIImplementation: ConverterImplementation {
             return nil
         }
 
-        // Look for patterns like ".pdf", ".docx" etc.
         let regex = try? NSRegularExpression(pattern: #"\.\b([a-z0-9]{2,5})\b"#)
         let text = result.output + " " + result.error
         let range = NSRange(text.startIndex..., in: text)
@@ -181,9 +183,12 @@ final class MarkItDownCLIImplementation: ConverterImplementation {
                 found.insert(String(text[swiftRange]))
             }
         }
-        let filtered = found.sorted()
+        let filtered = found.subtracting(Self.outputOnlyFormats).sorted()
         return filtered.isEmpty ? nil : filtered
     }
+
+    /// Formats that are output targets, not input sources.
+    private static let outputOnlyFormats: Set<String> = ["md", "markdown"]
 
     // MARK: - Utilities
 
@@ -191,7 +196,7 @@ final class MarkItDownCLIImplementation: ConverterImplementation {
         output
             .split(separator: "\n")
             .map { $0.trimmingCharacters(in: .whitespaces).lowercased() }
-            .filter { !$0.isEmpty }
+            .filter { !$0.isEmpty && !Self.outputOnlyFormats.contains($0) }
     }
 
     private func shellEscape(_ s: String) -> String {

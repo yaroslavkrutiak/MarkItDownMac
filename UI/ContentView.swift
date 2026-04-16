@@ -137,10 +137,11 @@ struct ContentView: View {
         let panel = NSOpenPanel()
         panel.allowsMultipleSelection = false
         panel.canChooseDirectories = false
-        if !bridge.supportedExtensions.isEmpty {
-            panel.allowedContentTypes = bridge.supportedExtensions.compactMap {
-                UTType(filenameExtension: $0)
-            }
+        let types = bridge.supportedExtensions.compactMap {
+            UTType(filenameExtension: $0)
+        }
+        if types.count >= 3 {
+            panel.allowedContentTypes = types
         }
         guard panel.runModal() == .OK, let url = panel.url else { return }
         startConversion(url)
