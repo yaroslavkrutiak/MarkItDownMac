@@ -2,15 +2,12 @@ import Foundation
 
 /// Errors surfaced by the bridge to the UI layer.
 enum ConversionError: LocalizedError, Equatable {
-    case unsupportedFormat(String)
     case toolNotInstalled
     case conversionFailed(String)
     case outputWriteFailed(String)
 
     var errorDescription: String? {
         switch self {
-        case .unsupportedFormat(let ext):
-            return "The format .\(ext) is not supported by the installed version of markitdown."
         case .toolNotInstalled:
             return "markitdown is not installed."
         case .conversionFailed(let detail):
@@ -24,8 +21,8 @@ enum ConversionError: LocalizedError, Equatable {
         switch self {
         case .toolNotInstalled:
             return "Install it with:  pip install markitdown"
-        case .unsupportedFormat:
-            return "Try updating markitdown:  pip install --upgrade markitdown"
+        case .conversionFailed:
+            return "Enable debug logging (bug icon) and retry to capture details."
         default:
             return nil
         }
@@ -39,6 +36,8 @@ enum ConversionError: LocalizedError, Equatable {
 @MainActor
 final class ConverterBridge: ObservableObject {
 
+    /// Extensions discovered from the installed tool. Informational only —
+    /// conversion is never blocked based on this list.
     @Published private(set) var supportedExtensions: [String] = []
     @Published private(set) var isToolInstalled: Bool = false
     @Published var debugEnabled: Bool {
@@ -66,16 +65,8 @@ final class ConverterBridge: ObservableObject {
 
     // MARK: - Public API
 
-    /// Returns `true` if the extension is in the discovered list, or if
-    /// discovery returned nothing (in which case we allow everything through
-    /// and let markitdown itself reject unsupported files).
-    func isSupportedFormat(_ url: URL) -> Bool {
-        if supportedExtensions.isEmpty { return true }
-        let ext = url.pathExtension.lowercased()
-        return supportedExtensions.contains(ext)
-    }
-
-    /// Validate the file, convert it, and write the `.md` output.
+    /// Convert the file and write the `.md` output. No format gate —
+    /// markitdown itself decides what it can and cannot handle.
     ///
     /// - Parameters:
     ///   - fileURL: Source file to convert.
@@ -83,9 +74,6 @@ final class ConverterBridge: ObservableObject {
     /// - Returns: URL of the newly created Markdown file.
     func validateAndConvert(fileURL: URL, outputDir: URL? = nil) async throws -> URL {
         guard isToolInstalled else { throw ConversionError.toolNotInstalled }
-        guard isSupportedFormat(fileURL) else {
-            throw ConversionError.unsupportedFormat(fileURL.pathExtension)
-        }
 
         let impl = implementation
         let sourceURL = fileURL

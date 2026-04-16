@@ -2,7 +2,7 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 /// The root view — a state machine cycling through
-/// idle → validating → converting → success / error.
+/// idle → converting → success / error.
 struct ContentView: View {
 
     @EnvironmentObject private var bridge: ConverterBridge
@@ -14,8 +14,6 @@ struct ContentView: View {
             switch state {
             case .idle:
                 idleView
-            case .validating:
-                progressView(label: "Validating format...")
             case .converting(let url):
                 progressView(label: "Converting \(url.lastPathComponent)...")
             case .success(let url):
@@ -137,12 +135,7 @@ struct ContentView: View {
         let panel = NSOpenPanel()
         panel.allowsMultipleSelection = false
         panel.canChooseDirectories = false
-        let types = bridge.supportedExtensions.compactMap {
-            UTType(filenameExtension: $0)
-        }
-        if types.count >= 3 {
-            panel.allowedContentTypes = types
-        }
+        // No file type restrictions — let markitdown decide what it can handle.
         guard panel.runModal() == .OK, let url = panel.url else { return }
         startConversion(url)
     }
@@ -153,13 +146,8 @@ struct ContentView: View {
             return
         }
 
-        state = .validating
+        state = .converting(url)
         Task {
-            guard bridge.isSupportedFormat(url) else {
-                state = .error(.unsupportedFormat(url.pathExtension))
-                return
-            }
-            state = .converting(url)
             do {
                 let output = try await bridge.validateAndConvert(fileURL: url)
                 state = .success(output)
@@ -176,17 +164,15 @@ struct ContentView: View {
     private var stateTag: Int {
         switch state {
         case .idle: return 0
-        case .validating: return 1
-        case .converting: return 2
-        case .success: return 3
-        case .error: return 4
+        case .converting: return 1
+        case .success: return 2
+        case .error: return 3
         }
     }
 }
 
 private enum ConversionState {
     case idle
-    case validating
     case converting(URL)
     case success(URL)
     case error(ConversionError)
