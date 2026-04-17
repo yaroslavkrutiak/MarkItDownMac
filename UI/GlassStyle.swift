@@ -82,38 +82,55 @@ struct GlassPanel: ViewModifier {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.glassEnabled) private var glassEnabled
 
-    private var borderOpacity: Double { colorScheme == .dark ? 0.20 : 0.12 }
-    private var highlightOpacity: Double { colorScheme == .dark ? 0.12 : 0.25 }
+    private var specularTop: Color { colorScheme == .dark ? .white.opacity(0.45) : .white.opacity(0.78) }
+    private var specularMid: Color { colorScheme == .dark ? .white.opacity(0.08) : .white.opacity(0.10) }
+    private var specularBottom: Color { colorScheme == .dark ? .white.opacity(0.18) : .white.opacity(0.24) }
+    private var sheenOpacity: Double { colorScheme == .dark ? 0.16 : 0.32 }
 
     func body(content: Content) -> some View {
         if glassEnabled {
             content
+                // Layer 1 — blurred & saturated backdrop
                 .background(
                     RoundedRectangle(cornerRadius: cornerRadius)
                         .fill(.thinMaterial)
                 )
-                .overlay(
-                    RoundedRectangle(cornerRadius: cornerRadius)
-                        .stroke(Color.white.opacity(borderOpacity), lineWidth: 0.75)
-                )
+                // Layer 2 — inner light sheen concentrated on the upper third
                 .overlay(
                     RoundedRectangle(cornerRadius: cornerRadius)
                         .fill(
                             LinearGradient(
-                                colors: [
-                                    .white.opacity(highlightOpacity),
-                                    .white.opacity(highlightOpacity * 0.3),
-                                    .clear
+                                stops: [
+                                    .init(color: .white.opacity(sheenOpacity), location: 0.0),
+                                    .init(color: .white.opacity(sheenOpacity * 0.25), location: 0.35),
+                                    .init(color: .clear, location: 0.75)
                                 ],
                                 startPoint: .top,
                                 endPoint: .bottom
                             )
                         )
+                        .blendMode(.plusLighter)
                         .allowsHitTesting(false)
                 )
+                // Layer 3 — specular edge: bright at top, dim mid, faint rim-light at bottom
+                .overlay(
+                    RoundedRectangle(cornerRadius: cornerRadius)
+                        .strokeBorder(
+                            LinearGradient(
+                                stops: [
+                                    .init(color: specularTop, location: 0.0),
+                                    .init(color: specularMid, location: 0.55),
+                                    .init(color: specularBottom, location: 1.0)
+                                ],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            ),
+                            lineWidth: 0.75
+                        )
+                )
                 .shadow(
-                    color: .black.opacity(colorScheme == .dark ? 0.25 : 0.08),
-                    radius: 8, y: 4
+                    color: .black.opacity(colorScheme == .dark ? 0.28 : 0.10),
+                    radius: 10, y: 4
                 )
         } else {
             content
@@ -138,37 +155,67 @@ struct GlassButton: ViewModifier {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.glassEnabled) private var glassEnabled
 
+    private var specularTop: Color {
+        colorScheme == .dark
+            ? .white.opacity(isHovered ? 0.55 : 0.40)
+            : .white.opacity(isHovered ? 0.90 : 0.72)
+    }
+    private var specularBottom: Color {
+        colorScheme == .dark ? .white.opacity(0.14) : .white.opacity(0.18)
+    }
+    private var sheenOpacity: Double {
+        colorScheme == .dark ? (isHovered ? 0.16 : 0.10) : (isHovered ? 0.30 : 0.18)
+    }
+
     func body(content: Content) -> some View {
         content
             .padding(.horizontal, 16)
             .padding(.vertical, 10)
             .frame(maxWidth: .infinity)
+            // Layer 1 — blurred + saturated backdrop
             .background(
                 RoundedRectangle(cornerRadius: GlassStyle.buttonRadius)
-                    .fill(glassEnabled ? AnyShapeStyle(.thinMaterial) : AnyShapeStyle(Color.white.opacity(colorScheme == .dark ? 0.06 : 0.5)))
+                    .fill(glassEnabled
+                          ? AnyShapeStyle(.thinMaterial)
+                          : AnyShapeStyle(Color.white.opacity(colorScheme == .dark ? 0.06 : 0.5)))
             )
+            // Layer 2 — hover wash
             .overlay(
                 RoundedRectangle(cornerRadius: GlassStyle.buttonRadius)
-                    .fill(isHovered ? Color.white.opacity(0.10) : Color.clear)
+                    .fill(isHovered ? Color.white.opacity(0.08) : Color.clear)
             )
-            .overlay(
-                RoundedRectangle(cornerRadius: GlassStyle.buttonRadius)
-                    .stroke(Color.white.opacity(isHovered ? 0.30 : 0.18), lineWidth: 0.75)
-            )
+            // Layer 3 — inner light sheen on the top edge
             .overlay(
                 RoundedRectangle(cornerRadius: GlassStyle.buttonRadius)
                     .fill(
                         LinearGradient(
-                            colors: [.white.opacity(0.10), .clear],
+                            stops: [
+                                .init(color: .white.opacity(sheenOpacity), location: 0.0),
+                                .init(color: .white.opacity(sheenOpacity * 0.3), location: 0.45),
+                                .init(color: .clear, location: 0.85)
+                            ],
                             startPoint: .top,
-                            endPoint: .center
+                            endPoint: .bottom
                         )
                     )
+                    .blendMode(.plusLighter)
                     .allowsHitTesting(false)
             )
+            // Layer 4 — specular edge gradient
+            .overlay(
+                RoundedRectangle(cornerRadius: GlassStyle.buttonRadius)
+                    .strokeBorder(
+                        LinearGradient(
+                            colors: [specularTop, specularBottom],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        ),
+                        lineWidth: 0.75
+                    )
+            )
             .shadow(
-                color: .black.opacity(colorScheme == .dark ? 0.15 : 0.05),
-                radius: 4, y: 2
+                color: .black.opacity(colorScheme == .dark ? 0.18 : 0.06),
+                radius: isHovered ? 6 : 4, y: 2
             )
             .contentShape(RoundedRectangle(cornerRadius: GlassStyle.buttonRadius))
             .onHover { isHovered = $0 }
@@ -187,28 +234,56 @@ struct AccentGlassButton: ViewModifier {
             .padding(.horizontal, 16)
             .padding(.vertical, 10)
             .frame(maxWidth: .infinity)
+            // Layer 1 — tinted accent fill (deeper on hover)
             .background(
                 RoundedRectangle(cornerRadius: GlassStyle.buttonRadius)
-                    .fill(Color.accentColor.opacity(isHovered ? 0.30 : 0.20))
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color.accentColor.opacity(isHovered ? 0.38 : 0.26),
+                                Color.accentColor.opacity(isHovered ? 0.22 : 0.14)
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
             )
-            .overlay(
-                RoundedRectangle(cornerRadius: GlassStyle.buttonRadius)
-                    .stroke(Color.accentColor.opacity(0.5), lineWidth: 0.75)
-            )
+            // Layer 2 — inner specular sheen
             .overlay(
                 RoundedRectangle(cornerRadius: GlassStyle.buttonRadius)
                     .fill(
                         LinearGradient(
-                            colors: [.white.opacity(0.15), .clear],
+                            stops: [
+                                .init(color: .white.opacity(isHovered ? 0.28 : 0.18), location: 0.0),
+                                .init(color: .white.opacity(0.04), location: 0.45),
+                                .init(color: .clear, location: 0.85)
+                            ],
                             startPoint: .top,
-                            endPoint: .center
+                            endPoint: .bottom
                         )
                     )
+                    .blendMode(.plusLighter)
                     .allowsHitTesting(false)
             )
+            // Layer 3 — specular edge tinted toward accent
+            .overlay(
+                RoundedRectangle(cornerRadius: GlassStyle.buttonRadius)
+                    .strokeBorder(
+                        LinearGradient(
+                            colors: [
+                                .white.opacity(colorScheme == .dark ? 0.50 : 0.75),
+                                Color.accentColor.opacity(0.55),
+                                Color.accentColor.opacity(0.35)
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        ),
+                        lineWidth: 0.75
+                    )
+            )
             .shadow(
-                color: Color.accentColor.opacity(colorScheme == .dark ? 0.2 : 0.1),
-                radius: 6, y: 2
+                color: Color.accentColor.opacity(colorScheme == .dark ? 0.28 : 0.14),
+                radius: isHovered ? 8 : 6, y: 2
             )
             .contentShape(RoundedRectangle(cornerRadius: GlassStyle.buttonRadius))
             .onHover { isHovered = $0 }
