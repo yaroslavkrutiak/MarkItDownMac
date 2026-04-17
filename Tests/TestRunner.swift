@@ -370,6 +370,72 @@ func converterBridgeTests() {
         try check(!bridge.lastOutputResult!.didCollide, "Should not have collided")
     }
 
+    bridgeTest("missing dependency — stderr detection") {
+        let mock = MockConverterImplementation()
+        let bridge = ConverterBridge(implementation: mock)
+        await bridge.loadFormats()
+
+        let dir = makeTempDir("Bridge"); defer { removeTempDir(dir) }
+        let source = dir.appendingPathComponent("report.pdf")
+        try "pdf".write(to: source, atomically: true, encoding: .utf8)
+
+        let stderr = """
+        PdfConverter threw MissingDependencyException with message: …
+        To resolve this error, include the optional dependency [pdf] or [all] …
+        * pip install markitdown[pdf]
+        """
+        mock.convertResult = .failure(ShellError.executionFailed(stderr: stderr, exitCode: 1))
+
+        var caught: ConversionError?
+        do {
+            _ = try await bridge.validateAndConvert(fileURL: source, outputDir: dir)
+        } catch let err as ConversionError {
+            caught = err
+        }
+        try assertEqual(caught, .missingDependency(extra: "pdf"))
+    }
+
+    bridgeTest("missing dependency — streaming log detection") {
+        let mock = MockConverterImplementation()
+        mock.streamingLines = [
+            "[stderr] markitdown._exceptions.FileConversionException:",
+            "[stderr]  - PdfConverter threw MissingDependencyException with message:",
+            "[stderr] include the optional dependency [pdf] or [all]",
+            "[stderr] * pip install markitdown[pdf]",
+        ]
+        mock.streamingFinalError = ShellError.executionFailed(stderr: "", exitCode: 1)
+        let bridge = ConverterBridge(implementation: mock)
+        await bridge.loadFormats()
+
+        let dir = makeTempDir("Bridge"); defer { removeTempDir(dir) }
+        let source = dir.appendingPathComponent("doc.pdf")
+        try "pdf".write(to: source, atomically: true, encoding: .utf8)
+
+        var caught: ConversionError?
+        do {
+            _ = try await bridge.validateAndConvertStreaming(fileURL: source, outputDir: dir)
+        } catch let err as ConversionError {
+            caught = err
+        }
+        try assertEqual(caught, .missingDependency(extra: "pdf"))
+    }
+
+    bridgeTest("detector — no exception, no detection") {
+        try check(ConversionError.detectMissingDependency(in: "plain crash, no markers") == nil)
+    }
+
+    bridgeTest("detector — prefers specific extra over all") {
+        let text = """
+        MissingDependencyException: include the optional dependency [docx] or [all].
+        * pip install markitdown[all]
+        * pip install markitdown[docx]
+        """
+        try assertEqual(
+            ConversionError.detectMissingDependency(in: text),
+            .missingDependency(extra: "docx")
+        )
+    }
+
     bridgeTest("streaming collision tracking") {
         let mock = MockConverterImplementation()
         mock.streamingLines = ["# Doc"]

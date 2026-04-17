@@ -3,6 +3,7 @@ import Foundation
 /// Errors surfaced by the bridge to the UI layer.
 enum ConversionError: LocalizedError, Equatable {
     case toolNotInstalled
+    case missingDependency(extra: String)
     case conversionFailed(String)
     case outputWriteFailed(String)
 
@@ -10,6 +11,8 @@ enum ConversionError: LocalizedError, Equatable {
         switch self {
         case .toolNotInstalled:
             return "markitdown is not installed."
+        case .missingDependency(let extra):
+            return "markitdown is missing the optional [\(extra)] dependency needed to read this file."
         case .conversionFailed(let detail):
             return "Conversion failed: \(detail)"
         case .outputWriteFailed(let detail):
@@ -21,11 +24,38 @@ enum ConversionError: LocalizedError, Equatable {
         switch self {
         case .toolNotInstalled:
             return "Install it with:  pip install markitdown"
+        case .missingDependency(let extra):
+            return "pip install 'markitdown[\(extra)]'"
         case .conversionFailed:
             return "Enable debug logging (bug icon) and retry to capture details."
         default:
             return nil
         }
+    }
+
+    /// Inspect raw process output (stderr, streamed log, etc.) for markitdown's
+    /// `MissingDependencyException` and, if found, return a
+    /// `.missingDependency` error with the extra name extracted from the
+    /// `pip install markitdown[X]` hint. Prefers a specific extra over `[all]`.
+    static func detectMissingDependency(in output: String) -> ConversionError? {
+        guard output.contains("MissingDependencyException") else { return nil }
+        let pattern = #"markitdown\[([a-z0-9_\-,\s]+)\]"#
+        guard let regex = try? NSRegularExpression(
+            pattern: pattern, options: .caseInsensitive
+        ) else { return nil }
+
+        let range = NSRange(output.startIndex..., in: output)
+        var candidates: [String] = []
+        regex.enumerateMatches(in: output, range: range) { match, _, _ in
+            if let r = match?.range(at: 1), let swiftRange = Range(r, in: output) {
+                let value = output[swiftRange]
+                    .trimmingCharacters(in: .whitespaces)
+                if !value.isEmpty { candidates.append(value) }
+            }
+        }
+        guard let extra = candidates.first(where: { $0.lowercased() != "all" })
+            ?? candidates.first else { return nil }
+        return .missingDependency(extra: extra)
     }
 }
 
@@ -104,6 +134,10 @@ final class ConverterBridge: ObservableObject {
                 }
             }
         } catch {
+            let logText = conversionLog.joined(separator: "\n")
+            if let depError = ConversionError.detectMissingDependency(in: logText) {
+                throw depError
+            }
             throw ConversionError.conversionFailed(error.localizedDescription)
         }
 
@@ -136,6 +170,12 @@ final class ConverterBridge: ObservableObject {
         let markdown: String = try await Task.detached {
             do {
                 return try impl.convert(fileURL: sourceURL)
+            } catch let shellErr as ShellError {
+                if case .executionFailed(let stderr, _) = shellErr,
+                   let depError = ConversionError.detectMissingDependency(in: stderr) {
+                    throw depError
+                }
+                throw ConversionError.conversionFailed(shellErr.localizedDescription)
             } catch {
                 throw ConversionError.conversionFailed(error.localizedDescription)
             }

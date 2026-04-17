@@ -109,6 +109,76 @@ struct ConverterBridgeTests {
         #expect(bridge.supportedExtensions == ["pdf", "xlsx", "docx"])
     }
 
+    @Test func missingDependencyDetectionFromStderr() async throws {
+        let mock = MockConverterImplementation()
+        let bridge = ConverterBridge(implementation: mock)
+        await bridge.loadFormats()
+
+        let dir = try makeTempDir()
+        defer { try? FileManager.default.removeItem(at: dir) }
+
+        let stderr = """
+        markitdown._exceptions.FileConversionException: File conversion failed after 1 attempts:
+         - PdfConverter threw MissingDependencyException with message: PdfConverter \
+        recognized the input as a potential .pdf file, but the dependencies needed \
+        to read .pdf files have not been installed. To resolve this error, include \
+        the optional dependency [pdf] or [all] when installing MarkItDown. For example:
+
+        * pip install markitdown[pdf]
+        * pip install markitdown[all]
+        """
+        let source = dir.appendingPathComponent("doc.pdf")
+        try "pdf".write(to: source, atomically: true, encoding: .utf8)
+        mock.convertResult = .failure(ShellError.executionFailed(stderr: stderr, exitCode: 1))
+
+        do {
+            _ = try await bridge.validateAndConvert(fileURL: source, outputDir: dir)
+            Issue.record("Expected missingDependency error to be thrown")
+        } catch let err as ConversionError {
+            #expect(err == .missingDependency(extra: "pdf"))
+        }
+    }
+
+    @Test func missingDependencyDetectionFromStreamingLog() async throws {
+        let mock = MockConverterImplementation()
+        mock.streamingLines = [
+            "[stderr] Traceback (most recent call last):",
+            "[stderr] markitdown._exceptions.FileConversionException: File conversion failed:",
+            "[stderr]  - PdfConverter threw MissingDependencyException with message:",
+            "[stderr] ... include the optional dependency [pdf] or [all] ...",
+            "[stderr] * pip install markitdown[pdf]",
+        ]
+        mock.streamingFinalError = ShellError.executionFailed(stderr: "", exitCode: 1)
+        let bridge = ConverterBridge(implementation: mock)
+        await bridge.loadFormats()
+
+        let dir = try makeTempDir()
+        defer { try? FileManager.default.removeItem(at: dir) }
+
+        let source = dir.appendingPathComponent("doc.pdf")
+        try "pdf".write(to: source, atomically: true, encoding: .utf8)
+
+        do {
+            _ = try await bridge.validateAndConvertStreaming(fileURL: source, outputDir: dir)
+            Issue.record("Expected missingDependency error to be thrown")
+        } catch let err as ConversionError {
+            #expect(err == .missingDependency(extra: "pdf"))
+        }
+    }
+
+    @Test func detectorReturnsNilWithoutException() {
+        #expect(ConversionError.detectMissingDependency(in: "just a random failure") == nil)
+    }
+
+    @Test func detectorPrefersSpecificExtraOverAll() {
+        let text = """
+        MissingDependencyException … include the optional dependency [docx] or [all] …
+        * pip install markitdown[all]
+        * pip install markitdown[docx]
+        """
+        #expect(ConversionError.detectMissingDependency(in: text) == .missingDependency(extra: "docx"))
+    }
+
     @Test func emptyFormatListDoesNotBlock() async throws {
         let mock = MockConverterImplementation()
         mock.formats = []

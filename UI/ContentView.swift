@@ -303,6 +303,7 @@ struct ContentView: View {
     private func errorTitle(_ error: ConversionError) -> String {
         switch error {
         case .toolNotInstalled: return "markitdown not found"
+        case .missingDependency: return "Missing dependency"
         case .conversionFailed: return "Conversion failed"
         case .outputWriteFailed: return "Could not write output"
         }

@@ -12,6 +12,10 @@ final class MockConverterImplementation: ConverterImplementation {
     /// When set, `convertStreaming` yields these lines instead of using the default.
     var streamingLines: [String]? = nil
 
+    /// When set alongside `streamingLines`, the stream finishes by throwing
+    /// this error after yielding all lines.
+    var streamingFinalError: Error? = nil
+
     func convert(fileURL: URL) throws -> String {
         switch convertResult {
         case .success(let md): return md
@@ -21,9 +25,14 @@ final class MockConverterImplementation: ConverterImplementation {
 
     func convertStreaming(fileURL: URL) -> AsyncThrowingStream<String, Error> {
         if let lines = streamingLines {
+            let finalError = streamingFinalError
             return AsyncThrowingStream { cont in
                 for line in lines { cont.yield(line) }
-                cont.finish()
+                if let err = finalError {
+                    cont.finish(throwing: err)
+                } else {
+                    cont.finish()
+                }
             }
         }
         // Fall back to default: yield full convert() result as one chunk.
