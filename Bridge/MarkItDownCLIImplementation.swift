@@ -86,7 +86,7 @@ final class MarkItDownCLIImplementation: ConverterImplementation {
     /// Search common locations for the `markitdown` binary and return its
     /// absolute path, or throw if not found.
     private func resolvedBinaryPath() throws -> String {
-        let home = NSHomeDirectory()
+        let home = FileManager.default.homeDirectoryForCurrentUser.path
         let candidates = [
             "\(home)/.pyenv/shims/markitdown",
             "\(home)/.local/bin/markitdown",
@@ -135,6 +135,8 @@ final class MarkItDownCLIImplementation: ConverterImplementation {
                 if isinstance(items, dict):
                     items = items.values()
                 for c in items:
+                    # Newer MarkItDown versions wrap converters in ConverterRegistration.
+                    c = getattr(c, 'converter', c)
                     for attr_name in dir(c):
                         if 'ext' not in attr_name.lower():
                             continue
